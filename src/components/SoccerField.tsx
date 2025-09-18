@@ -1,22 +1,38 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Stage, Layer, Rect, Line, Circle, Arc } from "react-konva";
 import { PlayerMarker } from "./PlayerMarker";
 import { BallMarker } from "./BallMarker";
-import { Player, Ball } from "@/types";
+import { ArrowMarker } from "./ArrowMarker";
+import { Player, Ball, Arrow } from "@/types";
 
 interface SoccerFieldProps {
   width: number;
   height: number;
   players: Player[];
   ball?: Ball;
-  selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete' | 'ball';
-  onPlayerAdd: (x: number, y: number, team: 'red' | 'blue') => void;
+  arrows: Arrow[];
+  selectedTool:
+    | "move"
+    | "red-player"
+    | "blue-player"
+    | "delete"
+    | "ball"
+    | "arrow";
+  onPlayerAdd: (x: number, y: number, team: "red" | "blue") => void;
   onPlayerMove: (id: string, x: number, y: number) => void;
   onPlayerDelete: (id: string) => void;
   onBallPlace: (x: number, y: number) => void;
   onBallMove: (x: number, y: number) => void;
+  onArrowAdd: (arrow: Arrow) => void;
+  onArrowMove: (
+    id: string,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
+  ) => void;
 }
 
 export const SoccerField: React.FC<SoccerFieldProps> = ({
@@ -24,13 +40,23 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
   height,
   players,
   ball,
+  arrows,
   selectedTool,
   onPlayerAdd,
   onPlayerMove,
   onPlayerDelete,
   onBallPlace,
-  onBallMove
+  onBallMove,
+  onArrowAdd,
+  onArrowMove,
 }) => {
+  const [isDrawingArrow, setIsDrawingArrow] = useState(false);
+  const [arrowStart, setArrowStart] = useState<{
+    x: number;
+    y: number;
+    attachedTo?: { type: "player" | "ball"; id?: string };
+  } | null>(null);
+
   const fieldRatio = 105 / 68; // FIFA field ratio (length/width)
   const fieldWidth = Math.min(width * 0.9, height * 0.9 * fieldRatio);
   const fieldHeight = fieldWidth / fieldRatio;
@@ -38,14 +64,67 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
   const offsetX = (width - fieldWidth) / 2;
   const offsetY = (height - fieldHeight) / 2;
 
+  // Helper function to check if click is near a player or ball
+  const findNearbyEntity = (x: number, y: number, threshold = 25) => {
+    // Check players
+    for (const player of players) {
+      const distance = Math.sqrt((player.x - x) ** 2 + (player.y - y) ** 2);
+      if (distance <= threshold) {
+        return {
+          type: "player" as const,
+          id: player.id,
+          x: player.x,
+          y: player.y,
+        };
+      }
+    }
+
+    // Check ball
+    if (ball) {
+      const distance = Math.sqrt((ball.x - x) ** 2 + (ball.y - y) ** 2);
+      if (distance <= threshold) {
+        return { type: "ball" as const, x: ball.x, y: ball.y };
+      }
+    }
+
+    return null;
+  };
+
   const handleStageClick = (e: any) => {
     const pos = e.target.getStage().getPointerPosition();
 
-    if (selectedTool === 'red-player' || selectedTool === 'blue-player') {
-      const team = selectedTool === 'red-player' ? 'red' : 'blue';
+    if (selectedTool === "red-player" || selectedTool === "blue-player") {
+      const team = selectedTool === "red-player" ? "red" : "blue";
       onPlayerAdd(pos.x, pos.y, team);
-    } else if (selectedTool === 'ball') {
+    } else if (selectedTool === "ball") {
       onBallPlace(pos.x, pos.y);
+    } else if (selectedTool === "arrow") {
+      if (!isDrawingArrow) {
+        // Start drawing arrow
+        const nearby = findNearbyEntity(pos.x, pos.y);
+        setArrowStart({
+          x: nearby ? nearby.x : pos.x,
+          y: nearby ? nearby.y : pos.y,
+          attachedTo: nearby ? { type: nearby.type, id: nearby.id } : undefined,
+        });
+        setIsDrawingArrow(true);
+      } else {
+        // Finish drawing arrow
+        if (arrowStart) {
+          const newArrow: Arrow = {
+            id: `arrow-${Date.now()}-${Math.random()}`,
+            startX: arrowStart.x,
+            startY: arrowStart.y,
+            endX: pos.x,
+            endY: pos.y,
+            attachedTo: arrowStart.attachedTo,
+            style: "movement", // Default to movement style
+          };
+          onArrowAdd(newArrow);
+        }
+        setIsDrawingArrow(false);
+        setArrowStart(null);
+      }
     }
   };
 
@@ -196,14 +275,24 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
 
       {/* Players Layer */}
       <Layer>
+        {/* Arrows - render first so they appear behind players/ball */}
+        {arrows.map((arrow) => (
+          <ArrowMarker
+            key={arrow.id}
+            arrow={arrow}
+            isMoveModeActive={selectedTool === "move"}
+            onArrowMove={onArrowMove}
+          />
+        ))}
+
         {players.map((player) => (
           <PlayerMarker
             key={player.id}
             player={player}
             onDragEnd={onPlayerMove}
             onDelete={onPlayerDelete}
-            isDraggable={selectedTool === 'move'}
-            isDeleteMode={selectedTool === 'delete'}
+            isDraggable={selectedTool === "move"}
+            isDeleteMode={selectedTool === "delete"}
           />
         ))}
 
@@ -212,7 +301,7 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
           <BallMarker
             ball={ball}
             onDragEnd={onBallMove}
-            isDraggable={selectedTool === 'move' || selectedTool === 'ball'}
+            isDraggable={selectedTool === "move" || selectedTool === "ball"}
           />
         )}
       </Layer>

@@ -20,6 +20,11 @@ export const BallMarker: React.FC<BallMarkerProps> = ({
       x={ball.x}
       y={ball.y}
       draggable={isDraggable}
+      onDragMove={(e) => {
+        if (isDraggable) {
+          onDragEnd(e.target.x(), e.target.y());
+        }
+      }}
       onDragEnd={(e) => {
         onDragEnd(e.target.x(), e.target.y());
       }}

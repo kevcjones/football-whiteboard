@@ -20,6 +20,19 @@ export interface Ball {
   y: number;
 }
 
+export interface Arrow {
+  id: string;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  attachedTo?: {
+    type: 'player' | 'ball';
+    id?: string; // Only for players, ball doesn't have ID
+  };
+  style: 'movement' | 'pass' | 'run';
+}
+
 export interface Drill {
   id: string;
   name: string;
@@ -34,6 +47,7 @@ export interface Frame {
   players: Player[];
   cones: Cone[];
   ball?: Ball;
+  arrows: Arrow[];
   createdAt: Date;
 }
 
@@ -51,5 +65,5 @@ export interface WhiteboardState {
   currentFrameSetId?: string;
   selectedDrill?: Drill;
   isDrawing: boolean;
-  selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete' | 'ball';
+  selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete' | 'ball' | 'arrow';
 }

@@ -5,11 +5,11 @@ import { SoccerField } from '@/components/SoccerField';
 import { Toolbar } from '@/components/Toolbar';
 import { FrameToolbar } from '@/components/FrameToolbar';
 import { FrameSetManager } from '@/components/FrameSetManager';
-import { Player, Frame, FrameSet, Ball } from '@/types';
+import { Player, Frame, FrameSet, Ball, Arrow } from '@/types';
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [selectedTool, setSelectedTool] = useState<'move' | 'red-player' | 'blue-player' | 'delete' | 'ball'>('move');
+  const [selectedTool, setSelectedTool] = useState<'move' | 'red-player' | 'blue-player' | 'delete' | 'ball' | 'arrow'>('move');
 
   // Initialize with first frame
   const [frames, setFrames] = useState<Frame[]>([{
@@ -17,6 +17,7 @@ export default function Home() {
     name: 'Frame 1',
     players: [],
     cones: [],
+    arrows: [],
     createdAt: new Date()
   }]);
   const [currentFrameId, setCurrentFrameId] = useState('frame-1');
@@ -63,6 +64,12 @@ export default function Home() {
             ...frame,
             players: frame.players.map(player =>
               player.id === id ? { ...player, x, y } : player
+            ),
+            // Update arrows attached to this player
+            arrows: frame.arrows.map(arrow =>
+              arrow.attachedTo?.type === 'player' && arrow.attachedTo.id === id
+                ? { ...arrow, startX: x, startY: y }
+                : arrow
             )
           }
         : frame
@@ -138,7 +145,37 @@ export default function Home() {
   const handleBallMove = (x: number, y: number) => {
     setFrames(prev => prev.map(frame =>
       frame.id === currentFrameId
-        ? { ...frame, ball: { x, y } }
+        ? {
+            ...frame,
+            ball: { x, y },
+            // Update arrows attached to the ball
+            arrows: frame.arrows.map(arrow =>
+              arrow.attachedTo?.type === 'ball'
+                ? { ...arrow, startX: x, startY: y }
+                : arrow
+            )
+          }
+        : frame
+    ));
+  };
+
+  const handleArrowAdd = (arrow: Arrow) => {
+    setFrames(prev => prev.map(frame =>
+      frame.id === currentFrameId
+        ? { ...frame, arrows: [...frame.arrows, arrow] }
+        : frame
+    ));
+  };
+
+  const handleArrowMove = (id: string, startX: number, startY: number, endX: number, endY: number) => {
+    setFrames(prev => prev.map(frame =>
+      frame.id === currentFrameId
+        ? {
+            ...frame,
+            arrows: frame.arrows.map(arrow =>
+              arrow.id === id ? { ...arrow, startX, startY, endX, endY } : arrow
+            )
+          }
         : frame
     ));
   };
@@ -169,12 +206,15 @@ export default function Home() {
               height={dimensions.height - 80}
               players={currentFrame.players}
               ball={currentFrame.ball}
+              arrows={currentFrame.arrows}
               selectedTool={selectedTool}
               onPlayerAdd={handlePlayerAdd}
               onPlayerMove={handlePlayerMove}
               onPlayerDelete={handlePlayerDelete}
               onBallPlace={handleBallPlace}
               onBallMove={handleBallMove}
+              onArrowAdd={handleArrowAdd}
+              onArrowMove={handleArrowMove}
             />
           </div>
         </main>

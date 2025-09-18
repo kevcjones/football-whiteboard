@@ -27,6 +27,11 @@ export const PlayerMarker: React.FC<PlayerMarkerProps> = ({
       x={player.x}
       y={player.y}
       draggable={isDraggable}
+      onDragMove={(e) => {
+        if (isDraggable) {
+          onDragEnd(player.id, e.target.x(), e.target.y());
+        }
+      }}
       onDragEnd={(e) => {
         onDragEnd(player.id, e.target.x(), e.target.y());
       }}
