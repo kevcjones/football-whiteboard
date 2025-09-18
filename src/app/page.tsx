@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { SoccerField } from '@/components/SoccerField';
 import { Toolbar } from '@/components/Toolbar';
 import { FrameToolbar } from '@/components/FrameToolbar';
-import { Player, Frame } from '@/types';
+import { FrameSetManager } from '@/components/FrameSetManager';
+import { Player, Frame, FrameSet } from '@/types';
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -19,6 +20,7 @@ export default function Home() {
     createdAt: new Date()
   }]);
   const [currentFrameId, setCurrentFrameId] = useState('frame-1');
+  const [currentFrameSetId, setCurrentFrameSetId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -111,11 +113,33 @@ export default function Home() {
     setFrames(reorderedFrames);
   };
 
+  const handleLoadFrameSet = (frameset: FrameSet) => {
+    setFrames(frameset.frames);
+    setCurrentFrameSetId(frameset.id);
+
+    // Set current frame to first frame in the loaded set
+    if (frameset.frames.length > 0) {
+      setCurrentFrameId(frameset.frames[0].id);
+    }
+  };
+
+  const handleFrameSetSaved = (frameset: FrameSet) => {
+    setCurrentFrameSetId(frameset.id);
+  };
+
   return (
     <div className="w-full h-screen bg-gray-100 overflow-hidden">
       <div className="flex flex-col h-full">
-        <header className="bg-white shadow-sm p-4 border-b">
+        <header className="bg-white shadow-sm p-4 border-b flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">Soccer Training Whiteboard</h1>
+          {currentFrameSetId && (
+            <div className="text-sm text-gray-600">
+              <span className="font-medium">Current: </span>
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                {frames.find(() => true)?.name?.replace(/Frame \d+/, '') || 'Untitled Frameset'}
+              </span>
+            </div>
+          )}
         </header>
 
         <main className="flex-1 flex">
@@ -144,6 +168,14 @@ export default function Home() {
           onFrameAdd={handleFrameAdd}
           onFrameDelete={handleFrameDelete}
           onFrameReorder={handleFrameReorder}
+        />
+
+        {/* FrameSet Manager */}
+        <FrameSetManager
+          frames={frames}
+          currentFrameSetId={currentFrameSetId}
+          onLoadFrameSet={handleLoadFrameSet}
+          onFrameSetSaved={handleFrameSetSaved}
         />
       </div>
     </div>

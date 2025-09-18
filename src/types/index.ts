@@ -31,9 +31,18 @@ export interface Frame {
   createdAt: Date;
 }
 
+export interface FrameSet {
+  id: string;
+  name: string;
+  frames: Frame[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface WhiteboardState {
   frames: Frame[];
   currentFrameId: string;
+  currentFrameSetId?: string;
   selectedDrill?: Drill;
   isDrawing: boolean;
   selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete';
