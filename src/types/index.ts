@@ -15,6 +15,11 @@ export interface Cone {
   color: string;
 }
 
+export interface Ball {
+  x: number;
+  y: number;
+}
+
 export interface Drill {
   id: string;
   name: string;
@@ -28,6 +33,7 @@ export interface Frame {
   name: string;
   players: Player[];
   cones: Cone[];
+  ball?: Ball;
   createdAt: Date;
 }
 
@@ -45,5 +51,5 @@ export interface WhiteboardState {
   currentFrameSetId?: string;
   selectedDrill?: Drill;
   isDrawing: boolean;
-  selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete';
+  selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete' | 'ball';
 }

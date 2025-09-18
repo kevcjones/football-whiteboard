@@ -5,11 +5,11 @@ import { SoccerField } from '@/components/SoccerField';
 import { Toolbar } from '@/components/Toolbar';
 import { FrameToolbar } from '@/components/FrameToolbar';
 import { FrameSetManager } from '@/components/FrameSetManager';
-import { Player, Frame, FrameSet } from '@/types';
+import { Player, Frame, FrameSet, Ball } from '@/types';
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [selectedTool, setSelectedTool] = useState<'move' | 'red-player' | 'blue-player' | 'delete'>('move');
+  const [selectedTool, setSelectedTool] = useState<'move' | 'red-player' | 'blue-player' | 'delete' | 'ball'>('move');
 
   // Initialize with first frame
   const [frames, setFrames] = useState<Frame[]>([{
@@ -127,6 +127,22 @@ export default function Home() {
     setCurrentFrameSetId(frameset.id);
   };
 
+  const handleBallPlace = (x: number, y: number) => {
+    setFrames(prev => prev.map(frame =>
+      frame.id === currentFrameId
+        ? { ...frame, ball: { x, y } }
+        : frame
+    ));
+  };
+
+  const handleBallMove = (x: number, y: number) => {
+    setFrames(prev => prev.map(frame =>
+      frame.id === currentFrameId
+        ? { ...frame, ball: { x, y } }
+        : frame
+    ));
+  };
+
   return (
     <div className="w-full h-screen bg-gray-100 overflow-hidden">
       <div className="flex flex-col h-full">
@@ -152,10 +168,13 @@ export default function Home() {
               width={dimensions.width - 200}
               height={dimensions.height - 80}
               players={currentFrame.players}
+              ball={currentFrame.ball}
               selectedTool={selectedTool}
               onPlayerAdd={handlePlayerAdd}
               onPlayerMove={handlePlayerMove}
               onPlayerDelete={handlePlayerDelete}
+              onBallPlace={handleBallPlace}
+              onBallMove={handleBallMove}
             />
           </div>
         </main>

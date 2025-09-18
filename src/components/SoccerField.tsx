@@ -3,26 +3,33 @@
 import React from "react";
 import { Stage, Layer, Rect, Line, Circle, Arc } from "react-konva";
 import { PlayerMarker } from "./PlayerMarker";
-import { Player } from "@/types";
+import { BallMarker } from "./BallMarker";
+import { Player, Ball } from "@/types";
 
 interface SoccerFieldProps {
   width: number;
   height: number;
   players: Player[];
-  selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete';
+  ball?: Ball;
+  selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete' | 'ball';
   onPlayerAdd: (x: number, y: number, team: 'red' | 'blue') => void;
   onPlayerMove: (id: string, x: number, y: number) => void;
   onPlayerDelete: (id: string) => void;
+  onBallPlace: (x: number, y: number) => void;
+  onBallMove: (x: number, y: number) => void;
 }
 
 export const SoccerField: React.FC<SoccerFieldProps> = ({
   width,
   height,
   players,
+  ball,
   selectedTool,
   onPlayerAdd,
   onPlayerMove,
-  onPlayerDelete
+  onPlayerDelete,
+  onBallPlace,
+  onBallMove
 }) => {
   const fieldRatio = 105 / 68; // FIFA field ratio (length/width)
   const fieldWidth = Math.min(width * 0.9, height * 0.9 * fieldRatio);
@@ -32,10 +39,13 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
   const offsetY = (height - fieldHeight) / 2;
 
   const handleStageClick = (e: any) => {
+    const pos = e.target.getStage().getPointerPosition();
+
     if (selectedTool === 'red-player' || selectedTool === 'blue-player') {
-      const pos = e.target.getStage().getPointerPosition();
       const team = selectedTool === 'red-player' ? 'red' : 'blue';
       onPlayerAdd(pos.x, pos.y, team);
+    } else if (selectedTool === 'ball') {
+      onBallPlace(pos.x, pos.y);
     }
   };
 
@@ -196,6 +206,15 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
             isDeleteMode={selectedTool === 'delete'}
           />
         ))}
+
+        {/* Ball */}
+        {ball && (
+          <BallMarker
+            ball={ball}
+            onDragEnd={onBallMove}
+            isDraggable={selectedTool === 'move' || selectedTool === 'ball'}
+          />
+        )}
       </Layer>
     </Stage>
   );
