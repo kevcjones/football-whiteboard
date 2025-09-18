@@ -276,7 +276,7 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
       {/* Players Layer */}
       <Layer>
         {/* Arrows - render first so they appear behind players/ball */}
-        {arrows.map((arrow) => (
+        {arrows?.map((arrow) => (
           <ArrowMarker
             key={arrow.id}
             arrow={arrow}

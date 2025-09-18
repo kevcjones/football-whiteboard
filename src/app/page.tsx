@@ -36,18 +36,22 @@ export default function Home() {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Get current frame
+  // Get current frame and ensure arrows array exists
   const currentFrame = frames.find(f => f.id === currentFrameId) || frames[0];
+  const safeCurrentFrame = {
+    ...currentFrame,
+    arrows: currentFrame.arrows || []
+  };
 
   const handlePlayerAdd = (x: number, y: number, team: 'red' | 'blue') => {
     const newPlayer: Player = {
       id: `player-${Date.now()}-${Math.random()}`,
-      name: `Player ${currentFrame.players.length + 1}`,
+      name: `Player ${safeCurrentFrame.players.length + 1}`,
       position: 'player',
       x,
       y,
       team,
-      number: currentFrame.players.filter(p => p.team === team).length + 1
+      number: safeCurrentFrame.players.filter(p => p.team === team).length + 1
     };
 
     setFrames(prev => prev.map(frame =>
@@ -66,7 +70,7 @@ export default function Home() {
               player.id === id ? { ...player, x, y } : player
             ),
             // Update arrows attached to this player
-            arrows: frame.arrows.map(arrow =>
+            arrows: (frame.arrows || []).map(arrow =>
               arrow.attachedTo?.type === 'player' && arrow.attachedTo.id === id
                 ? { ...arrow, startX: x, startY: y }
                 : arrow
@@ -79,7 +83,14 @@ export default function Home() {
   const handlePlayerDelete = (id: string) => {
     setFrames(prev => prev.map(frame =>
       frame.id === currentFrameId
-        ? { ...frame, players: frame.players.filter(player => player.id !== id) }
+        ? {
+            ...frame,
+            players: frame.players.filter(player => player.id !== id),
+            // Remove arrows attached to this player
+            arrows: (frame.arrows || []).filter(arrow =>
+              !(arrow.attachedTo?.type === 'player' && arrow.attachedTo.id === id)
+            )
+          }
         : frame
     ));
   };
@@ -149,7 +160,7 @@ export default function Home() {
             ...frame,
             ball: { x, y },
             // Update arrows attached to the ball
-            arrows: frame.arrows.map(arrow =>
+            arrows: (frame.arrows || []).map(arrow =>
               arrow.attachedTo?.type === 'ball'
                 ? { ...arrow, startX: x, startY: y }
                 : arrow
@@ -162,7 +173,7 @@ export default function Home() {
   const handleArrowAdd = (arrow: Arrow) => {
     setFrames(prev => prev.map(frame =>
       frame.id === currentFrameId
-        ? { ...frame, arrows: [...frame.arrows, arrow] }
+        ? { ...frame, arrows: [...(frame.arrows || []), arrow] }
         : frame
     ));
   };
@@ -172,7 +183,7 @@ export default function Home() {
       frame.id === currentFrameId
         ? {
             ...frame,
-            arrows: frame.arrows.map(arrow =>
+            arrows: (frame.arrows || []).map(arrow =>
               arrow.id === id ? { ...arrow, startX, startY, endX, endY } : arrow
             )
           }
@@ -204,9 +215,9 @@ export default function Home() {
             <SoccerField
               width={dimensions.width - 200}
               height={dimensions.height - 80}
-              players={currentFrame.players}
-              ball={currentFrame.ball}
-              arrows={currentFrame.arrows}
+              players={safeCurrentFrame.players}
+              ball={safeCurrentFrame.ball}
+              arrows={safeCurrentFrame.arrows}
               selectedTool={selectedTool}
               onPlayerAdd={handlePlayerAdd}
               onPlayerMove={handlePlayerMove}
