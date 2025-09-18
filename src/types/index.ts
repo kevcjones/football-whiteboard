@@ -23,9 +23,17 @@ export interface Drill {
   description?: string;
 }
 
-export interface WhiteboardState {
+export interface Frame {
+  id: string;
+  name: string;
   players: Player[];
   cones: Cone[];
+  createdAt: Date;
+}
+
+export interface WhiteboardState {
+  frames: Frame[];
+  currentFrameId: string;
   selectedDrill?: Drill;
   isDrawing: boolean;
   selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete';

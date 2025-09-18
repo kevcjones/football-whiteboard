@@ -3,12 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import { SoccerField } from '@/components/SoccerField';
 import { Toolbar } from '@/components/Toolbar';
-import { Player } from '@/types';
+import { FrameToolbar } from '@/components/FrameToolbar';
+import { Player, Frame } from '@/types';
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [players, setPlayers] = useState<Player[]>([]);
   const [selectedTool, setSelectedTool] = useState<'move' | 'red-player' | 'blue-player' | 'delete'>('move');
+
+  // Initialize with first frame
+  const [frames, setFrames] = useState<Frame[]>([{
+    id: 'frame-1',
+    name: 'Frame 1',
+    players: [],
+    cones: [],
+    createdAt: new Date()
+  }]);
+  const [currentFrameId, setCurrentFrameId] = useState('frame-1');
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -23,27 +33,64 @@ export default function Home() {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
+  // Get current frame
+  const currentFrame = frames.find(f => f.id === currentFrameId) || frames[0];
+
   const handlePlayerAdd = (x: number, y: number, team: 'red' | 'blue') => {
     const newPlayer: Player = {
       id: `player-${Date.now()}-${Math.random()}`,
-      name: `Player ${players.length + 1}`,
+      name: `Player ${currentFrame.players.length + 1}`,
       position: 'player',
       x,
       y,
       team,
-      number: players.filter(p => p.team === team).length + 1
+      number: currentFrame.players.filter(p => p.team === team).length + 1
     };
-    setPlayers(prev => [...prev, newPlayer]);
+
+    setFrames(prev => prev.map(frame =>
+      frame.id === currentFrameId
+        ? { ...frame, players: [...frame.players, newPlayer] }
+        : frame
+    ));
   };
 
   const handlePlayerMove = (id: string, x: number, y: number) => {
-    setPlayers(prev => prev.map(player =>
-      player.id === id ? { ...player, x, y } : player
+    setFrames(prev => prev.map(frame =>
+      frame.id === currentFrameId
+        ? {
+            ...frame,
+            players: frame.players.map(player =>
+              player.id === id ? { ...player, x, y } : player
+            )
+          }
+        : frame
     ));
   };
 
   const handlePlayerDelete = (id: string) => {
-    setPlayers(prev => prev.filter(player => player.id !== id));
+    setFrames(prev => prev.map(frame =>
+      frame.id === currentFrameId
+        ? { ...frame, players: frame.players.filter(player => player.id !== id) }
+        : frame
+    ));
+  };
+
+  const handleFrameSelect = (frameId: string) => {
+    setCurrentFrameId(frameId);
+  };
+
+  const handleFrameAdd = () => {
+    const newFrameNumber = frames.length + 1;
+    const newFrame: Frame = {
+      id: `frame-${Date.now()}`,
+      name: `Frame ${newFrameNumber}`,
+      players: [...currentFrame.players], // Clone current frame's players
+      cones: [...currentFrame.cones], // Clone current frame's cones
+      createdAt: new Date()
+    };
+
+    setFrames(prev => [...prev, newFrame]);
+    setCurrentFrameId(newFrame.id);
   };
 
   return (
@@ -62,7 +109,7 @@ export default function Home() {
             <SoccerField
               width={dimensions.width - 200}
               height={dimensions.height - 80}
-              players={players}
+              players={currentFrame.players}
               selectedTool={selectedTool}
               onPlayerAdd={handlePlayerAdd}
               onPlayerMove={handlePlayerMove}
@@ -70,6 +117,14 @@ export default function Home() {
             />
           </div>
         </main>
+
+        {/* Frame Toolbar */}
+        <FrameToolbar
+          frames={frames}
+          currentFrameId={currentFrameId}
+          onFrameSelect={handleFrameSelect}
+          onFrameAdd={handleFrameAdd}
+        />
       </div>
     </div>
   );
