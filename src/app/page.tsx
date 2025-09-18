@@ -93,6 +93,24 @@ export default function Home() {
     setCurrentFrameId(newFrame.id);
   };
 
+  const handleFrameDelete = (frameId: string) => {
+    if (frames.length <= 1) return; // Prevent deleting last frame
+
+    setFrames(prev => prev.filter(frame => frame.id !== frameId));
+
+    // If deleting current frame, switch to another frame
+    if (currentFrameId === frameId) {
+      const currentIndex = frames.findIndex(f => f.id === frameId);
+      const nextFrame = frames[currentIndex + 1] || frames[currentIndex - 1] || frames[0];
+      setCurrentFrameId(nextFrame.id);
+    }
+  };
+
+  const handleFrameReorder = (newFrameIds: string[]) => {
+    const reorderedFrames = newFrameIds.map(id => frames.find(f => f.id === id)!);
+    setFrames(reorderedFrames);
+  };
+
   return (
     <div className="w-full h-screen bg-gray-100 overflow-hidden">
       <div className="flex flex-col h-full">
@@ -124,6 +142,8 @@ export default function Home() {
           currentFrameId={currentFrameId}
           onFrameSelect={handleFrameSelect}
           onFrameAdd={handleFrameAdd}
+          onFrameDelete={handleFrameDelete}
+          onFrameReorder={handleFrameReorder}
         />
       </div>
     </div>
