@@ -5,7 +5,7 @@ import { FootballField } from "@/components/FootballField";
 import { Toolbar } from "@/components/Toolbar";
 import { FrameToolbar } from "@/components/FrameToolbar";
 import { FrameSetManager } from "@/components/FrameSetManager";
-import { Player, Frame, FrameSet, Ball, Arrow } from "@/types";
+import { Player, Frame, FrameSet, Arrow } from "@/types";
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });

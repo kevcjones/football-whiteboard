@@ -21,9 +21,6 @@ export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, players, isMove
 
   if (length === 0) return null;
 
-  // Normalize direction
-  const unitX = dx / length;
-  const unitY = dy / length;
 
   // Arrow head size
   const headLength = 15;

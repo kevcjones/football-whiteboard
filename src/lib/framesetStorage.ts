@@ -2,6 +2,24 @@ import { FrameSet } from "@/types";
 
 const STORAGE_KEY = "FootballWhiteboard_framesets";
 
+interface StoredFrameSet {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  frames: StoredFrame[];
+}
+
+interface StoredFrame {
+  id: string;
+  name: string;
+  createdAt: string;
+  players: unknown[];
+  cones: unknown[];
+  arrows?: unknown[];
+  ball?: unknown;
+}
+
 export const framesetStorage = {
   // Get all saved framesets
   getFrameSets(): FrameSet[] {
@@ -11,13 +29,13 @@ export const framesetStorage = {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (!stored) return [];
 
-      const framesets = JSON.parse(stored);
+      const framesets: StoredFrameSet[] = JSON.parse(stored);
       // Convert date strings back to Date objects
-      return framesets.map((fs: any) => ({
+      return framesets.map((fs) => ({
         ...fs,
         createdAt: new Date(fs.createdAt),
         updatedAt: new Date(fs.updatedAt),
-        frames: fs.frames.map((frame: any) => ({
+        frames: fs.frames.map((frame) => ({
           ...frame,
           createdAt: new Date(frame.createdAt),
         })),

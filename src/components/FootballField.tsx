@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Stage, Layer, Rect, Line, Circle, Arc } from "react-konva";
+import { KonvaEventObject } from "konva/lib/Node";
 import { PlayerMarker } from "./PlayerMarker";
 import { BallMarker } from "./BallMarker";
 import { ArrowMarker } from "./ArrowMarker";
@@ -92,8 +93,9 @@ export const FootballField: React.FC<FootballFieldProps> = ({
     return null;
   };
 
-  const handleStageClick = (e: any) => {
-    const pos = e.target.getStage().getPointerPosition();
+  const handleStageClick = (e: KonvaEventObject<MouseEvent>) => {
+    const pos = e.target.getStage()?.getPointerPosition();
+    if (!pos) return;
 
     if (selectedTool === "red-player" || selectedTool === "blue-player") {
       const team = selectedTool === "red-player" ? "red" : "blue";
