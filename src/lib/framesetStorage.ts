@@ -39,7 +39,7 @@ export const framesetStorage = {
           ...frame,
           createdAt: new Date(frame.createdAt),
         })),
-      }));
+      })) as FrameSet[];
     } catch (error) {
       console.error("Error loading framesets:", error);
       return [];

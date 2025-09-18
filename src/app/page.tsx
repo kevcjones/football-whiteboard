@@ -124,6 +124,7 @@ export default function Home() {
       name: `Frame ${newFrameNumber}`,
       players: [...currentFrame.players], // Clone current frame's players
       cones: [...currentFrame.cones], // Clone current frame's cones
+      arrows: [...(currentFrame.arrows || [])], // Clone current frame's arrows
       createdAt: new Date(),
     };
 
