@@ -191,6 +191,17 @@ export default function Home() {
     ));
   };
 
+  const handleArrowDelete = (id: string) => {
+    setFrames(prev => prev.map(frame =>
+      frame.id === currentFrameId
+        ? {
+            ...frame,
+            arrows: (frame.arrows || []).filter(arrow => arrow.id !== id)
+          }
+        : frame
+    ));
+  };
+
   return (
     <div className="w-full h-screen bg-gray-100 overflow-hidden">
       <div className="flex flex-col h-full">
@@ -226,6 +237,7 @@ export default function Home() {
               onBallMove={handleBallMove}
               onArrowAdd={handleArrowAdd}
               onArrowMove={handleArrowMove}
+              onArrowDelete={handleArrowDelete}
             />
           </div>
         </main>

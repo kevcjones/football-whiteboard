@@ -33,6 +33,7 @@ interface SoccerFieldProps {
     endX: number,
     endY: number
   ) => void;
+  onArrowDelete: (id: string) => void;
 }
 
 export const SoccerField: React.FC<SoccerFieldProps> = ({
@@ -49,6 +50,7 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
   onBallMove,
   onArrowAdd,
   onArrowMove,
+  onArrowDelete,
 }) => {
   const [isDrawingArrow, setIsDrawingArrow] = useState(false);
   const [arrowStart, setArrowStart] = useState<{
@@ -281,7 +283,9 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
             key={arrow.id}
             arrow={arrow}
             isMoveModeActive={selectedTool === "move"}
+            isDeleteModeActive={selectedTool === "delete"}
             onArrowMove={onArrowMove}
+            onArrowDelete={onArrowDelete}
           />
         ))}
 

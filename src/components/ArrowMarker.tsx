@@ -7,10 +7,12 @@ import { Arrow } from '@/types';
 interface ArrowMarkerProps {
   arrow: Arrow;
   isMoveModeActive: boolean;
+  isDeleteModeActive: boolean;
   onArrowMove?: (id: string, startX: number, startY: number, endX: number, endY: number) => void;
+  onArrowDelete?: (id: string) => void;
 }
 
-export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, isMoveModeActive, onArrowMove }) => {
+export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, isMoveModeActive, isDeleteModeActive, onArrowMove, onArrowDelete }) => {
   // Calculate arrow head points
   const dx = arrow.endX - arrow.startX;
   const dy = arrow.endY - arrow.startY;
@@ -32,34 +34,47 @@ export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, isMoveModeActiv
   const arrowHead2X = arrow.endX - headLength * Math.cos(Math.atan2(dy, dx) + headAngle);
   const arrowHead2Y = arrow.endY - headLength * Math.sin(Math.atan2(dy, dx) + headAngle);
 
-  // Style based on arrow type
+  // Style based on arrow type and mode
   const getArrowStyle = () => {
-    switch (arrow.style) {
-      case 'movement':
-        return {
-          stroke: '#2563eb', // Blue
-          strokeWidth: 3,
-          dash: [10, 5], // Dashed for movement
-        };
-      case 'pass':
-        return {
-          stroke: '#dc2626', // Red
-          strokeWidth: 2,
-          dash: [], // Solid for pass
-        };
-      case 'run':
-        return {
-          stroke: '#16a34a', // Green
-          strokeWidth: 2,
-          dash: [5, 5], // Short dashes for run
-        };
-      default:
-        return {
-          stroke: '#2563eb',
-          strokeWidth: 3,
-          dash: [10, 5],
-        };
+    const baseStyle = (() => {
+      switch (arrow.style) {
+        case 'movement':
+          return {
+            stroke: '#2563eb', // Blue
+            strokeWidth: 3,
+            dash: [10, 5], // Dashed for movement
+          };
+        case 'pass':
+          return {
+            stroke: '#dc2626', // Red
+            strokeWidth: 2,
+            dash: [], // Solid for pass
+          };
+        case 'run':
+          return {
+            stroke: '#16a34a', // Green
+            strokeWidth: 2,
+            dash: [5, 5], // Short dashes for run
+          };
+        default:
+          return {
+            stroke: '#2563eb',
+            strokeWidth: 3,
+            dash: [10, 5],
+          };
+      }
+    })();
+
+    // Override with red color in delete mode
+    if (isDeleteModeActive) {
+      return {
+        ...baseStyle,
+        stroke: '#ef4444', // Red in delete mode
+        strokeWidth: baseStyle.strokeWidth + 1, // Slightly thicker
+      };
     }
+
+    return baseStyle;
   };
 
   const style = getArrowStyle();
@@ -74,6 +89,11 @@ export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, isMoveModeActiv
         dash={style.dash}
         lineCap="round"
         lineJoin="round"
+        onClick={() => {
+          if (isDeleteModeActive && onArrowDelete) {
+            onArrowDelete(arrow.id);
+          }
+        }}
       />
 
       {/* Arrow head */}
@@ -88,6 +108,11 @@ export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, isMoveModeActiv
         strokeWidth={style.strokeWidth}
         fill={style.stroke}
         closed={true}
+        onClick={() => {
+          if (isDeleteModeActive && onArrowDelete) {
+            onArrowDelete(arrow.id);
+          }
+        }}
       />
 
       {/* Draggable arrow head handle - only visible in move mode */}
