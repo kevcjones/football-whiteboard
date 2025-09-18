@@ -8,7 +8,7 @@ import { Player } from '@/types';
 export default function Home() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [players, setPlayers] = useState<Player[]>([]);
-  const [selectedTool, setSelectedTool] = useState<'move' | 'red-player' | 'blue-player'>('move');
+  const [selectedTool, setSelectedTool] = useState<'move' | 'red-player' | 'blue-player' | 'delete'>('move');
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -42,6 +42,10 @@ export default function Home() {
     ));
   };
 
+  const handlePlayerDelete = (id: string) => {
+    setPlayers(prev => prev.filter(player => player.id !== id));
+  };
+
   return (
     <div className="w-full h-screen bg-gray-100 overflow-hidden">
       <div className="flex flex-col h-full">
@@ -62,6 +66,7 @@ export default function Home() {
               selectedTool={selectedTool}
               onPlayerAdd={handlePlayerAdd}
               onPlayerMove={handlePlayerMove}
+              onPlayerDelete={handlePlayerDelete}
             />
           </div>
         </main>

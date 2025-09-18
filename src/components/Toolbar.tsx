@@ -3,8 +3,8 @@
 import React from 'react';
 
 interface ToolbarProps {
-  selectedTool: 'move' | 'red-player' | 'blue-player';
-  onToolSelect: (tool: 'move' | 'red-player' | 'blue-player') => void;
+  selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete';
+  onToolSelect: (tool: 'move' | 'red-player' | 'blue-player' | 'delete') => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({ selectedTool, onToolSelect }) => {
@@ -26,6 +26,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({ selectedTool, onToolSelect }) 
       name: 'Blue Player',
       icon: '🔵',
       description: 'Place blue team player'
+    },
+    {
+      id: 'delete' as const,
+      name: 'Delete',
+      icon: '🗑️',
+      description: 'Delete players'
     }
   ];
 

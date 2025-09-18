@@ -9,9 +9,10 @@ interface SoccerFieldProps {
   width: number;
   height: number;
   players: Player[];
-  selectedTool: 'move' | 'red-player' | 'blue-player';
+  selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete';
   onPlayerAdd: (x: number, y: number, team: 'red' | 'blue') => void;
   onPlayerMove: (id: string, x: number, y: number) => void;
+  onPlayerDelete: (id: string) => void;
 }
 
 export const SoccerField: React.FC<SoccerFieldProps> = ({
@@ -20,7 +21,8 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
   players,
   selectedTool,
   onPlayerAdd,
-  onPlayerMove
+  onPlayerMove,
+  onPlayerDelete
 }) => {
   const fieldRatio = 105 / 68; // FIFA field ratio (length/width)
   const fieldWidth = Math.min(width * 0.9, height * 0.9 * fieldRatio);
@@ -189,7 +191,9 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
             key={player.id}
             player={player}
             onDragEnd={onPlayerMove}
+            onDelete={onPlayerDelete}
             isDraggable={selectedTool === 'move'}
+            isDeleteMode={selectedTool === 'delete'}
           />
         ))}
       </Layer>

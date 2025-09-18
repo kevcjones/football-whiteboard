@@ -7,13 +7,17 @@ import { Player } from '@/types';
 interface PlayerMarkerProps {
   player: Player;
   onDragEnd: (id: string, x: number, y: number) => void;
+  onDelete: (id: string) => void;
   isDraggable: boolean;
+  isDeleteMode: boolean;
 }
 
 export const PlayerMarker: React.FC<PlayerMarkerProps> = ({
   player,
   onDragEnd,
-  isDraggable
+  onDelete,
+  isDraggable,
+  isDeleteMode
 }) => {
   const color = player.team === 'red' ? '#ef4444' : '#3b82f6';
   const textColor = '#ffffff';
@@ -26,12 +30,17 @@ export const PlayerMarker: React.FC<PlayerMarkerProps> = ({
       onDragEnd={(e) => {
         onDragEnd(player.id, e.target.x(), e.target.y());
       }}
+      onClick={() => {
+        if (isDeleteMode) {
+          onDelete(player.id);
+        }
+      }}
     >
       <Circle
         radius={20}
         fill={color}
-        stroke="#ffffff"
-        strokeWidth={2}
+        stroke={isDeleteMode ? "#ff0000" : "#ffffff"}
+        strokeWidth={isDeleteMode ? 4 : 2}
         shadowColor="black"
         shadowBlur={3}
         shadowOpacity={0.3}

@@ -28,5 +28,5 @@ export interface WhiteboardState {
   cones: Cone[];
   selectedDrill?: Drill;
   isDrawing: boolean;
-  selectedTool: 'move' | 'red-player' | 'blue-player';
+  selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete';
 }
