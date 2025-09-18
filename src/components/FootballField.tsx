@@ -7,7 +7,7 @@ import { BallMarker } from "./BallMarker";
 import { ArrowMarker } from "./ArrowMarker";
 import { Player, Ball, Arrow } from "@/types";
 
-interface SoccerFieldProps {
+interface FootballFieldProps {
   width: number;
   height: number;
   players: Player[];
@@ -36,7 +36,7 @@ interface SoccerFieldProps {
   onArrowDelete: (id: string) => void;
 }
 
-export const SoccerField: React.FC<SoccerFieldProps> = ({
+export const FootballField: React.FC<FootballFieldProps> = ({
   width,
   height,
   players,
@@ -282,6 +282,7 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({
           <ArrowMarker
             key={arrow.id}
             arrow={arrow}
+            players={players}
             isMoveModeActive={selectedTool === "move"}
             isDeleteModeActive={selectedTool === "delete"}
             onArrowMove={onArrowMove}

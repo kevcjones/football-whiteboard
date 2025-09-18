@@ -2,17 +2,18 @@
 
 import React from 'react';
 import { Line, Group, Circle } from 'react-konva';
-import { Arrow } from '@/types';
+import { Arrow, Player } from '@/types';
 
 interface ArrowMarkerProps {
   arrow: Arrow;
+  players: Player[];
   isMoveModeActive: boolean;
   isDeleteModeActive: boolean;
   onArrowMove?: (id: string, startX: number, startY: number, endX: number, endY: number) => void;
   onArrowDelete?: (id: string) => void;
 }
 
-export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, isMoveModeActive, isDeleteModeActive, onArrowMove, onArrowDelete }) => {
+export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, players, isMoveModeActive, isDeleteModeActive, onArrowMove, onArrowDelete }) => {
   // Calculate arrow head points
   const dx = arrow.endX - arrow.startX;
   const dy = arrow.endY - arrow.startY;
@@ -64,6 +65,25 @@ export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, isMoveModeActiv
           };
       }
     })();
+
+    // Special styling based on what the arrow is attached to
+    if (arrow.attachedTo?.type === 'ball') {
+      return {
+        stroke: '#4b5563', // Dark grey for ball arrows
+        strokeWidth: 3,
+        dash: [], // Solid for ball arrows
+      };
+    } else if (arrow.attachedTo?.type === 'player' && arrow.attachedTo.id) {
+      // Find the player and use their team color
+      const player = players.find(p => p.id === arrow.attachedTo?.id);
+      if (player) {
+        return {
+          stroke: player.team === 'red' ? '#ef4444' : '#3b82f6', // Red for red team, blue for blue team
+          strokeWidth: 3,
+          dash: [10, 5], // Dashed for player arrows
+        };
+      }
+    }
 
     // Override with red color in delete mode
     if (isDeleteModeActive) {
