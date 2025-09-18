@@ -5,6 +5,7 @@ export interface Player {
   x: number;
   y: number;
   number?: number;
+  team: 'red' | 'blue';
 }
 
 export interface Cone {
@@ -27,4 +28,5 @@ export interface WhiteboardState {
   cones: Cone[];
   selectedDrill?: Drill;
   isDrawing: boolean;
+  selectedTool: 'move' | 'red-player' | 'blue-player';
 }

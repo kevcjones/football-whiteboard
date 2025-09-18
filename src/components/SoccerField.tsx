@@ -2,13 +2,26 @@
 
 import React from "react";
 import { Stage, Layer, Rect, Line, Circle, Arc } from "react-konva";
+import { PlayerMarker } from "./PlayerMarker";
+import { Player } from "@/types";
 
 interface SoccerFieldProps {
   width: number;
   height: number;
+  players: Player[];
+  selectedTool: 'move' | 'red-player' | 'blue-player';
+  onPlayerAdd: (x: number, y: number, team: 'red' | 'blue') => void;
+  onPlayerMove: (id: string, x: number, y: number) => void;
 }
 
-export const SoccerField: React.FC<SoccerFieldProps> = ({ width, height }) => {
+export const SoccerField: React.FC<SoccerFieldProps> = ({
+  width,
+  height,
+  players,
+  selectedTool,
+  onPlayerAdd,
+  onPlayerMove
+}) => {
   const fieldRatio = 105 / 68; // FIFA field ratio (length/width)
   const fieldWidth = Math.min(width * 0.9, height * 0.9 * fieldRatio);
   const fieldHeight = fieldWidth / fieldRatio;
@@ -16,8 +29,16 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({ width, height }) => {
   const offsetX = (width - fieldWidth) / 2;
   const offsetY = (height - fieldHeight) / 2;
 
+  const handleStageClick = (e: any) => {
+    if (selectedTool === 'red-player' || selectedTool === 'blue-player') {
+      const pos = e.target.getStage().getPointerPosition();
+      const team = selectedTool === 'red-player' ? 'red' : 'blue';
+      onPlayerAdd(pos.x, pos.y, team);
+    }
+  };
+
   return (
-    <Stage width={width} height={height}>
+    <Stage width={width} height={height} onClick={handleStageClick}>
       <Layer>
         {/* Field background */}
         <Rect
@@ -159,6 +180,18 @@ export const SoccerField: React.FC<SoccerFieldProps> = ({ width, height }) => {
           stroke="#ffffff"
           strokeWidth={2}
         />
+      </Layer>
+
+      {/* Players Layer */}
+      <Layer>
+        {players.map((player) => (
+          <PlayerMarker
+            key={player.id}
+            player={player}
+            onDragEnd={onPlayerMove}
+            isDraggable={selectedTool === 'move'}
+          />
+        ))}
       </Layer>
     </Stage>
   );
