@@ -348,7 +348,11 @@ export const FootballField: React.FC<FootballFieldProps> = ({
             player={player}
             onDragEnd={onPlayerMove}
             onDelete={onPlayerDelete}
-            isDraggable={selectedTool === "move"}
+            isDraggable={
+              selectedTool === "move" ||
+              (selectedTool === "red-player" && player.team === "red") ||
+              (selectedTool === "blue-player" && player.team === "blue")
+            }
             isDeleteMode={selectedTool === "delete"}
           />
         ))}

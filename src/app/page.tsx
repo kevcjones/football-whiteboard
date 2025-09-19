@@ -240,6 +240,21 @@ export default function Home() {
     );
   };
 
+  const handleClearFrame = () => {
+    setFrames((prev) =>
+      prev.map((frame) =>
+        frame.id === currentFrameId
+          ? {
+              ...frame,
+              players: [],
+              ball: undefined,
+              arrows: [],
+            }
+          : frame
+      )
+    );
+  };
+
   return (
     <div className="w-full h-screen bg-gray-100 overflow-hidden">
       <div className="flex flex-col h-full">
@@ -259,7 +274,7 @@ export default function Home() {
         </header>
 
         <main className="flex-1 flex">
-          <Toolbar selectedTool={selectedTool} onToolSelect={setSelectedTool} />
+          <Toolbar selectedTool={selectedTool} onToolSelect={setSelectedTool} onClearFrame={handleClearFrame} />
           <div className="flex-1">
             <FootballField
               width={dimensions.width - 200}
