@@ -275,35 +275,37 @@ export default function Home() {
 
         <main className="flex-1 flex">
           <Toolbar selectedTool={selectedTool} onToolSelect={setSelectedTool} onClearFrame={handleClearFrame} />
-          <div className="flex-1">
-            <FootballField
-              width={dimensions.width - 200}
-              height={dimensions.height - 80}
-              players={safeCurrentFrame.players}
-              ball={safeCurrentFrame.ball}
-              arrows={safeCurrentFrame.arrows}
-              selectedTool={selectedTool}
-              onPlayerAdd={handlePlayerAdd}
-              onPlayerMove={handlePlayerMove}
-              onPlayerDelete={handlePlayerDelete}
-              onBallPlace={handleBallPlace}
-              onBallMove={handleBallMove}
-              onArrowAdd={handleArrowAdd}
-              onArrowMove={handleArrowMove}
-              onArrowDelete={handleArrowDelete}
+          <div className="flex-1 flex flex-col">
+            <div className="flex-1">
+              <FootballField
+                width={dimensions.width - 200}
+                height={dimensions.height - 120}
+                players={safeCurrentFrame.players}
+                ball={safeCurrentFrame.ball}
+                arrows={safeCurrentFrame.arrows}
+                selectedTool={selectedTool}
+                onPlayerAdd={handlePlayerAdd}
+                onPlayerMove={handlePlayerMove}
+                onPlayerDelete={handlePlayerDelete}
+                onBallPlace={handleBallPlace}
+                onBallMove={handleBallMove}
+                onArrowAdd={handleArrowAdd}
+                onArrowMove={handleArrowMove}
+                onArrowDelete={handleArrowDelete}
+              />
+            </div>
+
+            {/* Frame Toolbar - now positioned under the pitch */}
+            <FrameToolbar
+              frames={frames}
+              currentFrameId={currentFrameId}
+              onFrameSelect={handleFrameSelect}
+              onFrameAdd={handleFrameAdd}
+              onFrameDelete={handleFrameDelete}
+              onFrameReorder={handleFrameReorder}
             />
           </div>
         </main>
-
-        {/* Frame Toolbar */}
-        <FrameToolbar
-          frames={frames}
-          currentFrameId={currentFrameId}
-          onFrameSelect={handleFrameSelect}
-          onFrameAdd={handleFrameAdd}
-          onFrameDelete={handleFrameDelete}
-          onFrameReorder={handleFrameReorder}
-        />
 
         {/* FrameSet Manager */}
         <FrameSetManager
