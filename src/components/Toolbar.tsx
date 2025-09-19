@@ -13,7 +13,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({ selectedTool, onToolSelect, on
     {
       id: 'move' as const,
       name: 'Move',
-      icon: '👆',
+      icon: '✋',
       description: 'Select and move players'
     },
     {
