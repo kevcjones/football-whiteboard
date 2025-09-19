@@ -45,6 +45,46 @@ export default function Home() {
     return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't trigger shortcuts if user is typing in an input
+      if (event.target instanceof HTMLInputElement ||
+          event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (event.key.toLowerCase()) {
+        case 'm':
+          setSelectedTool('move');
+          break;
+        case 'r':
+          setSelectedTool('red-player');
+          break;
+        case 'b':
+          setSelectedTool('blue-player');
+          break;
+        case 'd':
+          setSelectedTool('delete');
+          break;
+        case 'l':
+        case 'a': // 'a' for arrow as alternative to 'l' for line
+          setSelectedTool('arrow');
+          break;
+        case 's': // 's' for soccer ball
+          setSelectedTool('ball');
+          break;
+        default:
+          return; // Don't prevent default for other keys
+      }
+
+      event.preventDefault();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Get current frame and ensure arrows array exists
   const currentFrame = frames.find((f) => f.id === currentFrameId) || frames[0];
   const safeCurrentFrame = {

@@ -31,6 +31,7 @@ export interface Arrow {
     id?: string; // Only for players, ball doesn't have ID
   };
   style: 'movement' | 'pass' | 'run';
+  segments?: { x: number; y: number }[]; // For multi-segment arrows
 }
 
 export interface Drill {

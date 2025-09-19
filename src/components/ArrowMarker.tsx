@@ -17,10 +17,30 @@ interface ArrowMarkerProps {
 export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, players, isMoveModeActive, isDeleteModeActive, onArrowMove, onArrowDelete }) => {
   const lineRef = useRef<Konva.Line>(null);
   const arrowHeadRef = useRef<Konva.Line>(null);
-  // Calculate arrow head points
-  const dx = arrow.endX - arrow.startX;
-  const dy = arrow.endY - arrow.startY;
-  const length = Math.sqrt(dx * dx + dy * dy);
+
+  // Calculate arrow head direction based on the final segment
+  const getArrowHeadDirection = () => {
+    let startPoint, endPoint;
+
+    if (arrow.segments && arrow.segments.length > 0) {
+      // Use the last segment for arrow head direction
+      const lastSegment = arrow.segments[arrow.segments.length - 1];
+      startPoint = lastSegment;
+      endPoint = { x: arrow.endX, y: arrow.endY };
+    } else {
+      // Use start and end points for single segment arrows
+      startPoint = { x: arrow.startX, y: arrow.startY };
+      endPoint = { x: arrow.endX, y: arrow.endY };
+    }
+
+    const dx = endPoint.x - startPoint.x;
+    const dy = endPoint.y - startPoint.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+
+    return { dx, dy, length };
+  };
+
+  const { dx, dy, length } = getArrowHeadDirection();
 
   if (length === 0) return null;
 
@@ -123,12 +143,31 @@ export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, players, isMove
     };
   }, [style.dash, style.stroke]); // Re-run when dash pattern or style changes
 
+  // Create points array for the arrow line
+  const createArrowPoints = () => {
+    const points = [arrow.startX, arrow.startY];
+
+    if (arrow.segments && arrow.segments.length > 0) {
+      // Add all segment points
+      arrow.segments.forEach(segment => {
+        points.push(segment.x, segment.y);
+      });
+    }
+
+    // Add end point
+    points.push(arrow.endX, arrow.endY);
+
+    return points;
+  };
+
+  const arrowPoints = createArrowPoints();
+
   return (
     <Group>
-      {/* Main arrow line */}
+      {/* Main arrow line (multi-segment or single) */}
       <Line
         ref={lineRef}
-        points={[arrow.startX, arrow.startY, arrow.endX, arrow.endY]}
+        points={arrowPoints}
         stroke={style.stroke}
         strokeWidth={style.strokeWidth}
         dash={style.dash}

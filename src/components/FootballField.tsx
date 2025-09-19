@@ -60,6 +60,8 @@ export const FootballField: React.FC<FootballFieldProps> = ({
     attachedTo?: { type: "player" | "ball"; id?: string };
   } | null>(null);
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const [arrowSegments, setArrowSegments] = useState<{ x: number; y: number }[]>([]);
+  const [isMultiSegmentMode, setIsMultiSegmentMode] = useState(false);
 
   const fieldRatio = 105 / 68; // FIFA field ratio (length/width)
   const fieldWidth = Math.min(width * 0.9, height * 0.9 * fieldRatio);
@@ -104,6 +106,8 @@ export const FootballField: React.FC<FootballFieldProps> = ({
     } else if (selectedTool === "ball") {
       onBallPlace(pos.x, pos.y);
     } else if (selectedTool === "arrow") {
+      const isCommandHeld = e.evt?.metaKey || e.evt?.ctrlKey; // metaKey for Mac, ctrlKey for Windows
+
       if (!isDrawingArrow) {
         // Start drawing arrow
         const nearby = findNearbyEntity(pos.x, pos.y);
@@ -113,23 +117,31 @@ export const FootballField: React.FC<FootballFieldProps> = ({
           attachedTo: nearby ? { type: nearby.type, id: nearby.id } : undefined,
         });
         setIsDrawingArrow(true);
-      } else {
-        // Finish drawing arrow
-        if (arrowStart) {
-          const newArrow: Arrow = {
-            id: `arrow-${Date.now()}-${Math.random()}`,
-            startX: arrowStart.x,
-            startY: arrowStart.y,
-            endX: pos.x,
-            endY: pos.y,
-            attachedTo: arrowStart.attachedTo,
-            style: "movement", // Default to movement style
-          };
-          onArrowAdd(newArrow);
+        setIsMultiSegmentMode(isCommandHeld);
+        if (isCommandHeld) {
+          setArrowSegments([]);
         }
-        setIsDrawingArrow(false);
-        setArrowStart(null);
-        setMousePosition(null);
+      } else {
+        if (isMultiSegmentMode && isCommandHeld) {
+          // Add another segment to the arrow
+          setArrowSegments(prev => [...prev, { x: pos.x, y: pos.y }]);
+        } else {
+          // Finish drawing arrow
+          if (arrowStart) {
+            const newArrow: Arrow = {
+              id: `arrow-${Date.now()}-${Math.random()}`,
+              startX: arrowStart.x,
+              startY: arrowStart.y,
+              endX: pos.x,
+              endY: pos.y,
+              attachedTo: arrowStart.attachedTo,
+              style: "movement", // Default to movement style
+              segments: arrowSegments.length > 0 ? arrowSegments : undefined,
+            };
+            onArrowAdd(newArrow);
+          }
+          resetArrowState();
+        }
       }
     }
   };
@@ -138,9 +150,7 @@ export const FootballField: React.FC<FootballFieldProps> = ({
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isDrawingArrow) {
-        setIsDrawingArrow(false);
-        setArrowStart(null);
-        setMousePosition(null);
+        resetArrowState();
       }
     };
 
@@ -156,6 +166,15 @@ export const FootballField: React.FC<FootballFieldProps> = ({
         setMousePosition(pos);
       }
     }
+  };
+
+  // Reset multi-segment state when escape is pressed
+  const resetArrowState = () => {
+    setIsDrawingArrow(false);
+    setArrowStart(null);
+    setMousePosition(null);
+    setArrowSegments([]);
+    setIsMultiSegmentMode(false);
   };
 
   return (
@@ -320,26 +339,84 @@ export const FootballField: React.FC<FootballFieldProps> = ({
 
         {/* Temporary arrow preview while drawing */}
         {isDrawingArrow && arrowStart && mousePosition && (
-          <Line
-            points={[arrowStart.x, arrowStart.y, mousePosition.x, mousePosition.y]}
-            stroke="#64748b"
-            strokeWidth={2}
-            dash={[5, 5]}
-            opacity={0.7}
-            lineCap="round"
-          />
+          <>
+            {isMultiSegmentMode && arrowSegments.length > 0 ? (
+              // Multi-segment preview
+              <>
+                {/* Draw all completed segments */}
+                {arrowSegments.map((segment, index) => {
+                  const prevPoint = index === 0 ? arrowStart : arrowSegments[index - 1];
+                  return (
+                    <Line
+                      key={`segment-${index}`}
+                      points={[prevPoint.x, prevPoint.y, segment.x, segment.y]}
+                      stroke="#64748b"
+                      strokeWidth={2}
+                      dash={[5, 5]}
+                      opacity={0.7}
+                      lineCap="round"
+                    />
+                  );
+                })}
+                {/* Draw current segment being drawn */}
+                <Line
+                  points={[
+                    arrowSegments.length > 0
+                      ? arrowSegments[arrowSegments.length - 1].x
+                      : arrowStart.x,
+                    arrowSegments.length > 0
+                      ? arrowSegments[arrowSegments.length - 1].y
+                      : arrowStart.y,
+                    mousePosition.x,
+                    mousePosition.y
+                  ]}
+                  stroke="#64748b"
+                  strokeWidth={2}
+                  dash={[3, 3]}
+                  opacity={0.5}
+                  lineCap="round"
+                />
+              </>
+            ) : (
+              // Single segment preview
+              <Line
+                points={[arrowStart.x, arrowStart.y, mousePosition.x, mousePosition.y]}
+                stroke="#64748b"
+                strokeWidth={2}
+                dash={[5, 5]}
+                opacity={0.7}
+                lineCap="round"
+              />
+            )}
+          </>
         )}
 
-        {/* Visual indicator for arrow start point */}
+        {/* Visual indicators for arrow points */}
         {isDrawingArrow && arrowStart && (
-          <Circle
-            x={arrowStart.x}
-            y={arrowStart.y}
-            radius={6}
-            fill="rgba(100, 116, 139, 0.5)"
-            stroke="#64748b"
-            strokeWidth={2}
-          />
+          <>
+            {/* Start point */}
+            <Circle
+              x={arrowStart.x}
+              y={arrowStart.y}
+              radius={6}
+              fill="rgba(100, 116, 139, 0.5)"
+              stroke="#64748b"
+              strokeWidth={2}
+            />
+
+            {/* Segment points for multi-segment arrows */}
+            {isMultiSegmentMode && arrowSegments.map((segment, index) => (
+              <Circle
+                key={`segment-point-${index}`}
+                x={segment.x}
+                y={segment.y}
+                radius={4}
+                fill="rgba(100, 116, 139, 0.7)"
+                stroke="#64748b"
+                strokeWidth={1}
+              />
+            ))}
+          </>
         )}
 
         {players.map((player) => (
