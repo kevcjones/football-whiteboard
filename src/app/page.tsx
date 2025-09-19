@@ -5,7 +5,9 @@ import { FootballField } from "@/components/FootballField";
 import { Toolbar } from "@/components/Toolbar";
 import { FrameToolbar } from "@/components/FrameToolbar";
 import { FrameSetManager } from "@/components/FrameSetManager";
+import { FormationSelector } from "@/components/FormationSelector";
 import { Player, Frame, FrameSet, Arrow } from "@/types";
+import { Formation, createFormationPlayers } from "@/lib/formations";
 
 export default function Home() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -28,6 +30,7 @@ export default function Home() {
   const [currentFrameSetId, setCurrentFrameSetId] = useState<
     string | undefined
   >(undefined);
+  const [isFormationSelectorOpen, setIsFormationSelectorOpen] = useState(false);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -255,6 +258,40 @@ export default function Home() {
     );
   };
 
+  const handleFormationSelect = (formation: Formation, team: 'red' | 'blue') => {
+    // Calculate field dimensions for formation placement
+    const fieldWidth = Math.min((dimensions.width - 200) * 0.9, (dimensions.height - 120) * 0.9 * (105 / 68));
+    const fieldHeight = fieldWidth / (105 / 68);
+    const offsetX = ((dimensions.width - 200) - fieldWidth) / 2;
+    const offsetY = ((dimensions.height - 120) - fieldHeight) / 2;
+
+    // Create players in formation
+    const formationPlayers = createFormationPlayers(
+      formation,
+      team,
+      fieldWidth,
+      fieldHeight,
+      offsetX,
+      offsetY
+    );
+
+    setFrames((prev) =>
+      prev.map((frame) =>
+        frame.id === currentFrameId
+          ? {
+              ...frame,
+              players: [
+                // Keep players from the other team
+                ...frame.players.filter(p => p.team !== team),
+                // Add new formation players
+                ...formationPlayers
+              ],
+            }
+          : frame
+      )
+    );
+  };
+
   return (
     <div className="w-full h-screen bg-gray-100 overflow-hidden">
       <div className="flex flex-col h-full">
@@ -274,7 +311,12 @@ export default function Home() {
         </header>
 
         <main className="flex-1 flex">
-          <Toolbar selectedTool={selectedTool} onToolSelect={setSelectedTool} onClearFrame={handleClearFrame} />
+          <Toolbar
+            selectedTool={selectedTool}
+            onToolSelect={setSelectedTool}
+            onClearFrame={handleClearFrame}
+            onFormationOpen={() => setIsFormationSelectorOpen(true)}
+          />
           <div className="flex-1 flex flex-col">
             <div className="flex-1">
               <FootballField
@@ -313,6 +355,13 @@ export default function Home() {
           currentFrameSetId={currentFrameSetId}
           onLoadFrameSet={handleLoadFrameSet}
           onFrameSetSaved={handleFrameSetSaved}
+        />
+
+        {/* Formation Selector */}
+        <FormationSelector
+          isOpen={isFormationSelectorOpen}
+          onClose={() => setIsFormationSelectorOpen(false)}
+          onFormationSelect={handleFormationSelect}
         />
       </div>
     </div>

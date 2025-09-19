@@ -6,9 +6,10 @@ interface ToolbarProps {
   selectedTool: 'move' | 'red-player' | 'blue-player' | 'delete' | 'ball' | 'arrow';
   onToolSelect: (tool: 'move' | 'red-player' | 'blue-player' | 'delete' | 'ball' | 'arrow') => void;
   onClearFrame?: () => void;
+  onFormationOpen?: () => void;
 }
 
-export const Toolbar: React.FC<ToolbarProps> = ({ selectedTool, onToolSelect, onClearFrame }) => {
+export const Toolbar: React.FC<ToolbarProps> = ({ selectedTool, onToolSelect, onClearFrame, onFormationOpen }) => {
   const tools = [
     {
       id: 'move' as const,
@@ -84,6 +85,20 @@ export const Toolbar: React.FC<ToolbarProps> = ({ selectedTool, onToolSelect, on
           >
             <span className="text-xl">🧹</span>
             <span className="text-sm font-medium">Clear Frame</span>
+          </button>
+        </div>
+      )}
+
+      {/* Formation Setup Button */}
+      {onFormationOpen && (
+        <div className="mt-2">
+          <button
+            onClick={onFormationOpen}
+            className="w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors bg-green-50 border-2 border-green-200 hover:bg-green-100 text-green-700"
+            title="Quick formation setup"
+          >
+            <span className="text-xl">⚽</span>
+            <span className="text-sm font-medium">Formation</span>
           </button>
         </div>
       )}
