@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Line, Group, Circle } from 'react-konva';
 import { Arrow, Player } from '@/types';
+import Konva from 'konva';
 
 interface ArrowMarkerProps {
   arrow: Arrow;
@@ -14,6 +15,8 @@ interface ArrowMarkerProps {
 }
 
 export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, players, isMoveModeActive, isDeleteModeActive, onArrowMove, onArrowDelete }) => {
+  const lineRef = useRef<Konva.Line>(null);
+  const arrowHeadRef = useRef<Konva.Line>(null);
   // Calculate arrow head points
   const dx = arrow.endX - arrow.startX;
   const dy = arrow.endY - arrow.startY;
@@ -96,10 +99,35 @@ export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, players, isMove
 
   const style = getArrowStyle();
 
+  // Animate dashes for dashed arrows
+  useEffect(() => {
+    if (!lineRef.current || !style.dash || style.dash.length === 0) return;
+
+    const layer = lineRef.current.getLayer();
+    if (!layer) return;
+
+    const dashAnimation = new Konva.Animation((frame) => {
+      if (!frame || !lineRef.current) return;
+
+      // Calculate the dash offset based on time to create movement effect
+      const dashLength = style.dash[0] + style.dash[1];
+      const dashOffset = -(frame.time / 30) % dashLength;
+
+      lineRef.current.dashOffset(dashOffset);
+    }, layer);
+
+    dashAnimation.start();
+
+    return () => {
+      dashAnimation.stop();
+    };
+  }, [style.dash, style.stroke]); // Re-run when dash pattern or style changes
+
   return (
     <Group>
       {/* Main arrow line */}
       <Line
+        ref={lineRef}
         points={[arrow.startX, arrow.startY, arrow.endX, arrow.endY]}
         stroke={style.stroke}
         strokeWidth={style.strokeWidth}
@@ -115,6 +143,7 @@ export const ArrowMarker: React.FC<ArrowMarkerProps> = ({ arrow, players, isMove
 
       {/* Arrow head */}
       <Line
+        ref={arrowHeadRef}
         points={[
           arrow.endX, arrow.endY,
           arrowHead1X, arrowHead1Y,
