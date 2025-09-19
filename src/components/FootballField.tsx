@@ -59,6 +59,7 @@ export const FootballField: React.FC<FootballFieldProps> = ({
     y: number;
     attachedTo?: { type: "player" | "ball"; id?: string };
   } | null>(null);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
 
   const fieldRatio = 105 / 68; // FIFA field ratio (length/width)
   const fieldWidth = Math.min(width * 0.9, height * 0.9 * fieldRatio);
@@ -128,12 +129,37 @@ export const FootballField: React.FC<FootballFieldProps> = ({
         }
         setIsDrawingArrow(false);
         setArrowStart(null);
+        setMousePosition(null);
+      }
+    }
+  };
+
+  // Handle escape key to cancel arrow drawing
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isDrawingArrow) {
+        setIsDrawingArrow(false);
+        setArrowStart(null);
+        setMousePosition(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDrawingArrow]);
+
+  // Handle mouse move for arrow preview
+  const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
+    if (isDrawingArrow && selectedTool === "arrow") {
+      const pos = e.target.getStage()?.getPointerPosition();
+      if (pos) {
+        setMousePosition(pos);
       }
     }
   };
 
   return (
-    <Stage width={width} height={height} onClick={handleStageClick}>
+    <Stage width={width} height={height} onClick={handleStageClick} onMouseMove={handleMouseMove}>
       <Layer>
         {/* Field background */}
         <Rect
@@ -291,6 +317,30 @@ export const FootballField: React.FC<FootballFieldProps> = ({
             onArrowDelete={onArrowDelete}
           />
         ))}
+
+        {/* Temporary arrow preview while drawing */}
+        {isDrawingArrow && arrowStart && mousePosition && (
+          <Line
+            points={[arrowStart.x, arrowStart.y, mousePosition.x, mousePosition.y]}
+            stroke="#64748b"
+            strokeWidth={2}
+            dash={[5, 5]}
+            opacity={0.7}
+            lineCap="round"
+          />
+        )}
+
+        {/* Visual indicator for arrow start point */}
+        {isDrawingArrow && arrowStart && (
+          <Circle
+            x={arrowStart.x}
+            y={arrowStart.y}
+            radius={6}
+            fill="rgba(100, 116, 139, 0.5)"
+            stroke="#64748b"
+            strokeWidth={2}
+          />
+        )}
 
         {players.map((player) => (
           <PlayerMarker
